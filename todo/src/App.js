@@ -1,5 +1,5 @@
 // import logo from './logo.svg';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import TodoBanner from './TodoBanner';
 import TodoRow from './TodoRow';
@@ -16,20 +16,24 @@ function App() {
     { action: "Call Joe", done: false }
   ]);
 
-  const createNewTodo = (task) => {
-    if (!todoItems.find(item => item.action === task)) {
-      setTodoItems([...todoItems, { action: task, done: false }]);
+   const createNewTodo = (task) => {
+    if (!todoItems
+      .find((item) => item.action === task))    
+    {
+      const updatedTodos = [...todoItems, {action: task, done: false}];
+      setTodoItems(updatedTodos);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
     }
   };
 
   const toggleTodo = (todo) => {
     const updatedTodos = todoItems.map((item) =>    
       item.action === todo.action
-        ? { ...item, done: !item.done }
-        : item
+      ? { ...item, done: !item.done }
+      : item
     );
     setTodoItems(updatedTodos);
-      //localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
   };
 
   const [showCompleted, setShowCompleted] = useState(true);
@@ -37,6 +41,32 @@ function App() {
   const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
     <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
   )
+
+    useEffect(() => {
+    try {
+      const data = localStorage.getItem("todos");
+      if(data)
+      {
+        const parsedData = JSON.parse(data);
+        if(Array.isArray(parsedData)) {
+          setTodoItems(parsedData);
+        }
+      }
+      else
+      {
+        [userName] = "Raveena";
+        [todoItems] = [{action: "Buy Flowers", done: false},
+          {action: "Get Shoes", done: false},
+          {action: "Collect Tickets", done: true},
+          {action: "Call Joe", done: false}
+        ];
+        [showCompleted] = true;
+      }
+    }
+    catch(error) {
+      console.error("Failed to load todos:", error);
+    }
+  },[])
 
   return (
     <div className="container mt-3">

@@ -1,35 +1,32 @@
 import React, { useState } from 'react';
 
-function TodoCreator({callback})
-{
+function TodoCreator({callback}) {
+  const [newItemText, setNewItemText] = useState("");
 
-    const [newItemText, setNewItemText] = useState("");
+  const updateNewTextValue = (event) => {
+    setNewItemText(event.target.value);
+  };
 
-    const updateNewTextValue = (event) => {
-      setNewItemText(event.target.value);
-    };
+  const createNewTodo = () => {
+    if(newItemText !== "") {
+      callback(newItemText);
+      setNewItemText("");
+    }
+  }    
 
-    const createNewTodo = () => {
-      if(newItemText !== "")
-      {
-          callback(newItemText);
-          setNewItemText("");
-      }
-    }    
-
-    return (
-      <div className="my-1">
-        <input
-          className="form-control"
-          placeholder="Add New Todo Item"
-          value={ newItemText }
-          onChange={ updateNewTextValue }
-        />
-        <button className="btn btn-primary mt-1" onClick={ createNewTodo }>
-          Add
-        </button>
-      </div>
-    );
+  return (
+    <div className="my-1">
+      <input
+        className="form-control"
+        placeholder="Add New Todo Item"
+        value={ newItemText }
+        onChange={ updateNewTextValue }
+      />
+      <button className="btn btn-primary mt-1" onClick={ createNewTodo }>
+        Add
+      </button>
+    </div>
+  );
 }
 
 export default TodoCreator;
