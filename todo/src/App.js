@@ -3,39 +3,45 @@ import React, { useState } from 'react';
 import './App.css';
 import TodoBanner from './TodoBanner';
 import TodoRow from './TodoRow';
+import TodoCreator from './TodoCreator';
 
 function App() {
   const [userName] = useState("Raveena");
 
-   // const changeStateData = () => {
-   //   setUserName(prevName => (prevName === "Raveena" ? "Ruby" : "Raveena"));
-   // };
-
-  const [todoItems] = useState([
+  const [todoItems, setTodoItems] = useState([
     { action: "Buy Flowers", done: false },
     { action: "Get Shoes", done: false },
     { action: "Collect Tickets", done: true },
     { action: "Call Joe", done: false }
   ]);
 
+  const createNewTodo = (task) => {
+    if (!todoItems.find(item => item.action === task)) {
+      setTodoItems([...todoItems, { action: task, done: false }]);
+    }
+  };
+
   return (
-    <div>
+    <div className="container mt-3">
       <TodoBanner userName={userName} todoItems={todoItems} />
-      <div style={{ padding: "50px" }}>
-        <table className="table table-striped table-bordered">
-          <thead className="table-dark">
-            <tr>
-              <th>Action</th>
-              <th>Done</th>
-            </tr>
-          </thead>
-          <tbody>
-            {todoItems.map((item, index) => (            
-              <TodoRow item={item} />
-            ))}
-          </tbody>
-        </table>
+
+      <div className="m-3">
+        <TodoCreator callback={createNewTodo} />
       </div>
+
+      <table className="table table-striped table-bordered">
+        <thead className="table-dark">
+          <tr>
+            <th>Action</th>
+            <th>Done</th>
+          </tr>
+        </thead>
+        <tbody>
+          {todoItems.map((item, index) => (
+            <TodoRow key={index} item={item} />
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
