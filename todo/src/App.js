@@ -7,7 +7,7 @@ import TodoCreator from './TodoCreator';
 import VisibilityControl from './VisibilityControl';
 
 function App() {
-  const [userName] = useState("Raveena");
+  const [userName, setUserName] = useState("Raveena");
 
   const [todoItems, setTodoItems] = useState([
     { action: "Buy Flowers", done: false },
@@ -36,37 +36,43 @@ function App() {
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
   };
 
+  const deleteTodo = (todo) => {
+  if (todo.done) {
+    const updatedTodos = todoItems.filter(item => item.action !== todo.action);
+    setTodoItems(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+  }
+};
+
+
   const [showCompleted, setShowCompleted] = useState(true);
   
-  const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
-    <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
-  )
+  //const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
+   // <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
+  //)
 
     useEffect(() => {
     try {
       const data = localStorage.getItem("todos");
-      if(data)
-      {
+      if (data) {
         const parsedData = JSON.parse(data);
-        if(Array.isArray(parsedData)) {
+        if (Array.isArray(parsedData)) {
           setTodoItems(parsedData);
         }
+      } else {
+        setUserName("Raveena");
+        setTodoItems([
+          { action: "Buy Flowers", done: false },
+          { action: "Get Shoes", done: false },
+          { action: "Collect Tickets", done: true },
+          { action: "Call Joe", done: false }
+        ]);
+        setShowCompleted(true);
       }
-      else
-      {
-        [userName] = "Raveena";
-        [todoItems] = [{action: "Buy Flowers", done: false},
-          {action: "Get Shoes", done: false},
-          {action: "Collect Tickets", done: true},
-          {action: "Call Joe", done: false}
-        ];
-        [showCompleted] = true;
-      }
-    }
-    catch(error) {
+    } catch (error) {
       console.error("Failed to load todos:", error);
     }
-  },[])
+  }, []);
 
   return (
     <div className="container mt-3">
@@ -80,7 +86,14 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          { todoTableRows(false) }
+          {todoItems.filter(item => !item.done).map(item => (
+            <TodoRow
+              key={item.action}
+              item={item}
+              toggle={toggleTodo}
+              // no deleteTodo prop passed here
+            />
+          ))}
         </tbody>
       </table>
 
@@ -95,16 +108,23 @@ function App() {
       <table className="table table-striped table-bordered">
         <thead>
           <tr>
-            <th style={{width: "75%"}}>Action</th>
-            <th style={{width: "25%"}}>Done</th>
+            <th style={{width: "60%"}}>Action</th>
+            <th style={{width: "20%"}}>Done</th>
+            <th style={{width: "20%"}}>Delete</th>
           </tr>
         </thead>
         <tbody>
-          { todoTableRows(true) }
+          { todoItems.filter(item => item.done).map(item => (
+              <TodoRow
+                key={item.action}
+                item={item}
+                toggle={toggleTodo}
+                deleteTodo={deleteTodo}   // pass deleteTodo callback
+              />
+          ))}
         </tbody>
       </table>
       }
-
       <div className="m-3" style={{width: "25%"}}>
         <TodoCreator callback={createNewTodo} />
       </div>
