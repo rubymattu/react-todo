@@ -4,6 +4,7 @@ import './App.css';
 import TodoBanner from './TodoBanner';
 import TodoRow from './TodoRow';
 import TodoCreator from './TodoCreator';
+import VisibilityControl from './VisibilityControl';
 
 function App() {
   const [userName] = useState("Raveena");
@@ -21,27 +22,62 @@ function App() {
     }
   };
 
+  const toggleTodo = (todo) => {
+    const updatedTodos = todoItems.map((item) =>    
+      item.action === todo.action
+        ? { ...item, done: !item.done }
+        : item
+    );
+    setTodoItems(updatedTodos);
+      //localStorage.setItem("todos", JSON.stringify(updatedTodos));
+  };
+
+  const [showCompleted, setShowCompleted] = useState(true);
+  
+  const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
+    <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
+  )
+
   return (
     <div className="container mt-3">
       <TodoBanner userName={userName} todoItems={todoItems} />
 
-      <div className="m-3">
-        <TodoCreator callback={createNewTodo} />
-      </div>
-
       <table className="table table-striped table-bordered">
         <thead className="table-dark">
           <tr>
-            <th>Action</th>
-            <th>Done</th>
+            <th style={{width: "75%"}}>Action</th>
+            <th style={{width: "25%"}}>Done</th>
           </tr>
         </thead>
         <tbody>
-          {todoItems.map((item, index) => (
-            <TodoRow key={index} item={item} />
-          ))}
+          { todoTableRows(false) }
         </tbody>
       </table>
+
+      <div className="bg-secondary text-white text-center p-2">
+        <VisibilityControl
+          description="Completed Tasks"
+          isChecked={showCompleted}
+          callback={(checked) => setShowCompleted(checked)} />
+      </div>
+
+      { showCompleted &&
+      <table className="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th style={{width: "75%"}}>Action</th>
+            <th style={{width: "25%"}}>Done</th>
+          </tr>
+        </thead>
+        <tbody>
+          { todoTableRows(true) }
+        </tbody>
+      </table>
+      }
+
+      <div className="m-3" style={{width: "25%"}}>
+        <TodoCreator callback={createNewTodo} />
+      </div>
     </div>
   );
 }
