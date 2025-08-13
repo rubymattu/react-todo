@@ -15,7 +15,7 @@ function TodoCreator({callback}) {
   }    
 
   return (
-    <div className="my-1">
+    <div className="input-group" style={{ marginBottom: 10}}>
       <input
         className="form-control"
         placeholder="Add New Todo Item"

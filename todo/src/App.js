@@ -7,7 +7,7 @@ import TodoCreator from './TodoCreator';
 import VisibilityControl from './VisibilityControl';
 
 function App() {
-  const [userName, setUserName] = useState("Raveena");
+   const [userName, setUserName] = useState("Raveena");
 
   const [todoItems, setTodoItems] = useState([
     { action: "Buy Flowers", done: false },
@@ -16,12 +16,12 @@ function App() {
     { action: "Call Joe", done: false }
   ]);
 
-   const createNewTodo = (task) => {
-    if (!todoItems
-      .find((item) => item.action === task))    
-    {
+  const [showCompleted, setShowCompleted] = useState(true);
+
+  const createNewTodo = (task) => {
+    if (!todoItems.find(item => item.action === task)) {
       const updatedTodos = [...todoItems, {action: task, done: false}];
-      setTodoItems(updatedTodos);
+      setTodoItems([...todoItems, { action: task, done: false }]);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
     }
   };
@@ -29,29 +29,39 @@ function App() {
   const toggleTodo = (todo) => {
     const updatedTodos = todoItems.map((item) =>    
       item.action === todo.action
-      ? { ...item, done: !item.done }
-      : item
+        ? { ...item, done: !item.done }
+        : item
     );
     setTodoItems(updatedTodos);
-      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+     localStorage.setItem("todos", JSON.stringify(updatedTodos));
   };
 
   const deleteTodo = (todo) => {
-  if (todo.done) {
-    const updatedTodos = todoItems.filter(item => item.action !== todo.action);
-    setTodoItems(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
-  }
-};
+    if (todo.done) {
+      const updatedTodos = todoItems.filter(item => item.action !== todo.action);
+      setTodoItems(updatedTodos);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    }
+  };
+
+  const editTodo = (oldItem, newAction) => {
+    setTodoItems(
+      todoItems.map(item =>
+        item.action === oldItem.action ? { ...item, action: newAction } : item
+      )
+    );
+  };
+
+  const clearCompleted = () => {
+    setTodoItems(todoItems.filter(item => !item.done));
+  };
 
 
-  const [showCompleted, setShowCompleted] = useState(true);
-  
-  //const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
-   // <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
-  //)
+  // const todoTableRows = (doneValue) => todoItems.filter(item => item.done === doneValue).map(item =>
+  //   <TodoRow key={ item.action } item={ item } toggle={ toggleTodo } />
+  // )
 
-    useEffect(() => {
+     useEffect(() => {
     try {
       const data = localStorage.getItem("todos");
       if (data) {
@@ -78,11 +88,16 @@ function App() {
     <div className="container mt-3">
       <TodoBanner userName={userName} todoItems={todoItems} />
 
+      <div className="m-3">
+        <TodoCreator callback={createNewTodo} />
+      </div>
+      
       <table className="table table-striped table-bordered">
         <thead className="table-dark">
           <tr>
-            <th style={{width: "75%"}}>Action</th>
-            <th style={{width: "25%"}}>Done</th>
+            <th>Action</th>
+            <th>Done</th>
+            <th>Actions</th> {/* For edit button */}
           </tr>
         </thead>
         <tbody>
@@ -91,43 +106,52 @@ function App() {
               key={item.action}
               item={item}
               toggle={toggleTodo}
-              // no deleteTodo prop passed here
+              editTodo={editTodo} // only passed for incomplete
             />
           ))}
         </tbody>
       </table>
 
       <div className="bg-secondary text-white text-center p-2">
-        <VisibilityControl
-          description="Completed Tasks"
-          isChecked={showCompleted}
-          callback={(checked) => setShowCompleted(checked)} />
-      </div>
+          <VisibilityControl
+            description="Completed Tasks"
+            isChecked={showCompleted}
+            callback={(checked) => setShowCompleted(checked)} />
+        </div>
 
-      { showCompleted &&
-      <table className="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th style={{width: "60%"}}>Action</th>
-            <th style={{width: "20%"}}>Done</th>
-            <th style={{width: "20%"}}>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          { todoItems.filter(item => item.done).map(item => (
+        {showCompleted && (
+        <table className="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th style={{ width: "60%" }}>Description</th>
+              <th style={{ width: "20%" }}>Done</th>
+              <th style={{ width: "20%" }}>Actions</th> {/* Delete button */}
+            </tr>
+          </thead>
+          <tbody>
+            {todoItems.filter(item => item.done).map(item => (
               <TodoRow
                 key={item.action}
                 item={item}
                 toggle={toggleTodo}
-                deleteTodo={deleteTodo}   // pass deleteTodo callback
+                deleteTodo={deleteTodo} // only passed here
               />
-          ))}
-        </tbody>
-      </table>
-      }
-      <div className="m-3" style={{width: "25%"}}>
-        <TodoCreator callback={createNewTodo} />
-      </div>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {todoItems.some(item => item.done) && (
+        <div className="text-center mt-3">
+          <button
+            className="btn btn-danger"
+            onClick={clearCompleted}
+          >
+            Clear All Completed
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }
